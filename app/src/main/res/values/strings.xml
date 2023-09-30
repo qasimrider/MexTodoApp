@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MexTodoApp</string>
+    <string name="create_task">Create Task</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_task_message">Empty Tasks</string>
+    <string name="close">Close</string>
+    <string name="search">Search</string>
+    <string name="search_tasks">Search tasks...</string>
+    <string name="priority">Priority</string>
+    <string name="category">Category</string>
+    <string name="completed">Completed</string>
+</resources>
