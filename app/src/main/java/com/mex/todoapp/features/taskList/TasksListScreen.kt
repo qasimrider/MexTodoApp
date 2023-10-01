@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,6 +64,7 @@ import com.mex.todoapp.model.resetFilters
 import com.mex.todoapp.mvi.UiState
 import com.mex.todoapp.navigation.taskNavigation.navigateToCreateTask
 import com.mex.todoapp.utility.ObserveUiState
+import com.mex.todoapp.utility.boldTitleText
 import com.mex.todoapp.utility.convertMillisToDate
 import com.mex.todoapp.utility.format
 
@@ -74,7 +76,9 @@ fun TasksListScreen(
 ) {
 
     val tasks = remember { mutableStateListOf<TaskView>() }
+    var selectedTask by remember { mutableStateOf(TaskView()) }
     var filterDialog by remember { mutableStateOf(false) }
+    var viewTaskDialog by remember { mutableStateOf(false) }
     val filterCriteria by remember { mutableStateOf(FilterCriteria()) }
 
     viewModel.run {
@@ -104,7 +108,10 @@ fun TasksListScreen(
             } else {
                 TaskList(
                     tasksList = tasks,
-                    onTaskClick = {},
+                    onTaskClick = {
+                        selectedTask = it
+                        viewTaskDialog = true
+                    },
                     onCompleteCheckChange = { completedStateChangedTask ->
                         dispatchIntent(TaskListIntent.UpdateTask(completedStateChangedTask.toTask()))
                     },
@@ -136,6 +143,10 @@ fun TasksListScreen(
                             dispatchIntent(TaskListIntent.FilterTasks(filterCriteria))
                         },
                         onSearchClick = { dispatchIntent(TaskListIntent.FilterTasks(filterCriteria)) })
+                }
+
+                if (viewTaskDialog) {
+                    TaskViewDialogScreen(selectedTask) { viewTaskDialog = false }
                 }
 
                 FloatingActionButton(
@@ -206,12 +217,15 @@ private fun TaskCard(
     val borderColor = if (isLongPressed) MaterialTheme.colorScheme.error else Color.Transparent
 
 
-    Card(modifier = Modifier
-        .padding(12.dp)
-        .fillMaxWidth()
-        .border(2.dp, borderColor, RoundedCornerShape(12.dp))
-        .combinedClickable(onLongClick = { isLongPressed = true }) {}) {
-
+    Card(
+        modifier = Modifier
+            .padding(12.dp)
+            .fillMaxWidth()
+            .border(2.dp, borderColor, RoundedCornerShape(12.dp))
+            .combinedClickable(
+                onLongClick = { isLongPressed = true },
+                onClick = { onTaskClick(taskView) })
+    ) {
         Row(verticalAlignment = Alignment.Top) {
 
             Checkbox(
@@ -283,6 +297,9 @@ private fun TaskCard(
     }
 }
 
+//endregion
+
+//region Task Filter UI
 @Composable
 fun FilterTasksScreen(
     filteringCriteria: FilterCriteria,
@@ -433,5 +450,69 @@ fun FilterAlertDialog(
             }) { Text(text = stringResource(R.string.search)) }
         })
 
+}
+//endregion
+
+//region View Task UI
+@Composable
+private fun TaskViewDialogScreen(taskView: TaskView, onCloseDialog: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onCloseDialog,
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = taskView.title,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Text(
+                    text = taskView.description,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+
+                Text(
+                    text = boldTitleText(
+                        stringResource(R.string.due_date),
+                        convertMillisToDate(taskView.dueDate).toString()
+                    ),
+                    fontSize = 18.sp,
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Text(
+                    text = boldTitleText(
+                        stringResource(R.string.category) + " ",
+                        taskView.category.name
+                    ),
+                    fontSize = 18.sp,
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Text(
+                    text = boldTitleText(
+                        stringResource(R.string.priority) + " ",
+                        taskView.priority.name
+                    ),
+                    fontSize = 18.sp,
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onCloseDialog() }) { Text(text = stringResource(R.string.ok)) }
+        })
 }
 //endregion
