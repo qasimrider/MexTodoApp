@@ -7,12 +7,16 @@ import com.mex.todoapp.data.MexTodoRepository
 import com.mex.todoapp.data.model.Task
 import com.mex.todoapp.mvi.UiState
 import com.mex.todoapp.mvi.ViewState
+import com.mex.todoapp.notification.NotificationScheduler
 import com.mex.todoapp.utility.launchViewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class CreateTaskViewModel @Inject constructor(private val mexTodoRepository: MexTodoRepository) :
+class CreateTaskViewModel @Inject constructor(
+    private val notificationScheduler: NotificationScheduler,
+    private val mexTodoRepository: MexTodoRepository
+) :
     BaseViewModel<CreateTaskIntent, CreateTaskAction, CreateChatUiState>() {
 
     override fun reducer(intent: CreateTaskIntent): CreateTaskAction =
@@ -31,14 +35,24 @@ class CreateTaskViewModel @Inject constructor(private val mexTodoRepository: Mex
         launchViewModelScope {
             mexTodoRepository.insertTask(task).collect { result ->
                 when (result) {
-                    is Result.Success -> _uiState.emit(UiState.Success(CreateChatUiState()))
+                    is Result.Success -> {
+                        createNotification(task)
+                        _uiState.emit(UiState.Success(CreateChatUiState()))
+                    }
+
                     is Result.Error -> TODO()
                     Result.Loading -> {}
                 }
             }
         }
     }
+
     //endregion
+    private fun createNotification(task: Task) {
+        val notificationTimeMillis =
+            System.currentTimeMillis() + 15 * 1000
+        notificationScheduler.scheduleNotification(task, notificationTimeMillis)
+    }
 }
 
 @Immutable

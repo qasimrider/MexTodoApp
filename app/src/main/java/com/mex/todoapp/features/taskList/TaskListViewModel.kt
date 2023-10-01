@@ -12,12 +12,16 @@ import com.mex.todoapp.model.Priority
 import com.mex.todoapp.model.TaskView
 import com.mex.todoapp.mvi.UiState
 import com.mex.todoapp.mvi.ViewState
+import com.mex.todoapp.notification.NotificationScheduler
 import com.mex.todoapp.utility.launchViewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTodoRepository) :
+class TaskListViewModel @Inject constructor(
+    private val mexTodoRepository: MexTodoRepository,
+    private val notificationScheduler: NotificationScheduler,
+) :
     BaseViewModel<TaskListIntent, TaskListAction, GetAllTasksUiState>() {
 
     private lateinit var getAllTasksUiState: GetAllTasksUiState
@@ -90,6 +94,7 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
             mexTodoRepository.deleteTask(task).collect { result ->
                 when (result) {
                     is Result.Success -> {
+                        cancelNotification(task)
                         _uiState.emit(UiState.Success(getAllTasksUiState.copy(isTaskDeleted = true)))
                     }
 
@@ -100,6 +105,10 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
         }
     }
     //endregion
+
+    private fun cancelNotification(task: Task) {
+        notificationScheduler.cancelScheduledNotification(task.id.toInt())
+    }
 
     private fun checkForFilterCriteria() {
         launchViewModelScope {
