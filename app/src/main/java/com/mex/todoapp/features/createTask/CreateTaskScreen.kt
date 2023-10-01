@@ -39,11 +39,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.mex.todoapp.R
-import com.mex.todoapp.base.UiState
 import com.mex.todoapp.data.model.toTask
 import com.mex.todoapp.model.Category
 import com.mex.todoapp.model.Priority
 import com.mex.todoapp.model.TaskView
+import com.mex.todoapp.mvi.UiState
 import com.mex.todoapp.utility.ObserveUiState
 import com.mex.todoapp.utility.component.MexTodoButton
 import com.mex.todoapp.utility.convertMillisToDate
@@ -127,16 +127,17 @@ fun CreateTaskScreen(navController: NavHostController) {
                 enabled = createTaskEnabled
             ) {
 
-                createTask(
-                    TaskView(
-                        title = title,
-                        description = description,
-                        dueDate = dueDate,
-                        category = selectedCategory,
-                        priority = selectedPriority
-                    ).toTask()
+                dispatchIntent(
+                    CreateTaskIntent.CreateTask(
+                        TaskView(
+                            title = title,
+                            description = description,
+                            dueDate = dueDate,
+                            category = selectedCategory,
+                            priority = selectedPriority
+                        ).toTask()
+                    )
                 )
-
             }
         }
     }

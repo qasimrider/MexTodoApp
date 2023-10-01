@@ -3,23 +3,40 @@ package com.mex.todoapp.features.taskList
 import androidx.compose.runtime.Immutable
 import com.mex.todoapp.base.BaseViewModel
 import com.mex.todoapp.base.Result
-import com.mex.todoapp.base.UiState
-import com.mex.todoapp.base.ViewState
 import com.mex.todoapp.data.MexTodoRepository
 import com.mex.todoapp.data.model.Task
 import com.mex.todoapp.data.model.toView
 import com.mex.todoapp.model.TaskView
+import com.mex.todoapp.mvi.UiState
+import com.mex.todoapp.mvi.ViewState
 import com.mex.todoapp.utility.launchViewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTodoRepository) :
-    BaseViewModel<GetAllTasksUiState>() {
+    BaseViewModel<TaskListIntent, TaskListAction, GetAllTasksUiState>() {
 
     private lateinit var getAllTasksUiState: GetAllTasksUiState
 
-    fun getTasks() {
+    override fun reducer(intent: TaskListIntent): TaskListAction {
+        return when (intent) {
+            is TaskListIntent.GetAllTasks -> TaskListAction.GetAllTasks
+            is TaskListIntent.UpdateTask -> TaskListAction.UpdateTask(intent.updatedTask)
+            is TaskListIntent.DeleteTask -> TaskListAction.DeleteTask(intent.deletedTask)
+        }
+    }
+
+    override fun handleAction(action: TaskListAction) {
+        when (action) {
+            is TaskListAction.GetAllTasks -> getTasks()
+            is TaskListAction.UpdateTask -> updateTask(action.updatedTask)
+            is TaskListAction.DeleteTask -> deleteTask(action.deletedTask)
+        }
+    }
+
+    //region Repository Calls
+    private fun getTasks() {
         launchViewModelScope {
             mexTodoRepository.getTasks().collect { result ->
                 when (result) {
@@ -35,9 +52,9 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
         }
     }
 
-    fun updateTask(task: Task) {
+    private fun updateTask(updatedTask: Task) {
         launchViewModelScope {
-            mexTodoRepository.updateTask(task).collect { result ->
+            mexTodoRepository.updateTask(updatedTask).collect { result ->
                 when (result) {
                     is Result.Success -> {
                         _uiState.emit(UiState.Success(getAllTasksUiState.copy(isTaskUpdated = true)))
@@ -50,7 +67,7 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
         }
     }
 
-    fun deleteTask(task: Task) {
+    private fun deleteTask(task: Task) {
         launchViewModelScope {
             mexTodoRepository.deleteTask(task).collect { result ->
                 when (result) {
@@ -64,6 +81,7 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
             }
         }
     }
+    //endregion
 }
 
 @Immutable
