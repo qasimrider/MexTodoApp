@@ -6,6 +6,9 @@ import com.mex.todoapp.base.Result
 import com.mex.todoapp.data.MexTodoRepository
 import com.mex.todoapp.data.model.Task
 import com.mex.todoapp.data.model.toView
+import com.mex.todoapp.model.Category
+import com.mex.todoapp.model.FilterCriteria
+import com.mex.todoapp.model.Priority
 import com.mex.todoapp.model.TaskView
 import com.mex.todoapp.mvi.UiState
 import com.mex.todoapp.mvi.ViewState
@@ -24,6 +27,7 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
             is TaskListIntent.GetAllTasks -> TaskListAction.GetAllTasks
             is TaskListIntent.UpdateTask -> TaskListAction.UpdateTask(intent.updatedTask)
             is TaskListIntent.DeleteTask -> TaskListAction.DeleteTask(intent.deletedTask)
+            is TaskListIntent.FilterTasks -> TaskListAction.FilterTasks(intent.filterCriteria)
         }
     }
 
@@ -32,6 +36,10 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
             is TaskListAction.GetAllTasks -> getTasks()
             is TaskListAction.UpdateTask -> updateTask(action.updatedTask)
             is TaskListAction.DeleteTask -> deleteTask(action.deletedTask)
+            is TaskListAction.FilterTasks -> {
+                getAllTasksUiState = getAllTasksUiState.copy(filterCriteria = action.filterCriteria)
+                checkForFilterCriteria()
+            }
         }
     }
 
@@ -41,8 +49,18 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
             mexTodoRepository.getTasks().collect { result ->
                 when (result) {
                     is Result.Success -> {
-                        getAllTasksUiState = GetAllTasksUiState(result.data.map { it.toView() })
-                        _uiState.emit(UiState.Success(getAllTasksUiState))
+                        getAllTasksUiState = if (::getAllTasksUiState.isInitialized) {
+                            getAllTasksUiState.copy(
+                                originalTasks = result.data,
+                                filterCriteria = getAllTasksUiState.filterCriteria
+                            )
+                        } else {
+                            GetAllTasksUiState(
+                                tasks = result.data.map { it.toView() },
+                                originalTasks = result.data
+                            )
+                        }
+                        checkForFilterCriteria()
                     }
 
                     is Result.Error -> TODO()
@@ -82,11 +100,39 @@ class TaskListViewModel @Inject constructor(private val mexTodoRepository: MexTo
         }
     }
     //endregion
+
+    private fun checkForFilterCriteria() {
+        launchViewModelScope {
+            getAllTasksUiState = getAllTasksUiState.copy(
+                tasks = filterTasks(
+                    getAllTasksUiState.originalTasks,
+                    getAllTasksUiState.filterCriteria
+                ).map { it.toView() },
+            )
+            _uiState.emit(UiState.Success(getAllTasksUiState))
+        }
+
+    }
+
+    private fun filterTasks(tasks: List<Task>, filterCriteria: FilterCriteria): List<Task> {
+        return tasks.filter { task ->
+            with(filterCriteria) {
+                val categoryMatch = category == Category.ALL || task.category == category
+                val priorityMatch = priority == Priority.ALL || task.priority == priority
+                val queryMatch = task.title.contains(query, ignoreCase = true)
+                val isCompletedMatch = if (isCompleted) task.isCompleted else true
+
+                categoryMatch && priorityMatch && queryMatch && isCompletedMatch
+            }
+        }
+    }
 }
 
 @Immutable
 data class GetAllTasksUiState(
     val tasks: List<TaskView>,
+    val originalTasks: List<Task>,
     val isTaskUpdated: Boolean? = null,
-    val isTaskDeleted: Boolean? = null
+    val isTaskDeleted: Boolean? = null,
+    val filterCriteria: FilterCriteria = FilterCriteria()
 ) : ViewState

@@ -74,7 +74,6 @@ fun TasksListScreen(
 ) {
 
     val tasks = remember { mutableStateListOf<TaskView>() }
-    val originalTasksList = remember { mutableStateListOf<TaskView>() }
     var filterDialog by remember { mutableStateOf(false) }
     val filterCriteria by remember { mutableStateOf(FilterCriteria()) }
 
@@ -84,19 +83,8 @@ fun TasksListScreen(
             uiState.collect { getTaskUiState ->
                 when (getTaskUiState) {
                     is UiState.Success -> {
-                        originalTasksList.clear()
-                        originalTasksList.addAll(getTaskUiState.data.tasks)
-
                         tasks.clear()
-                        tasks.addAll(
-                            filterTasks(
-                                getTaskUiState.data.tasks,
-                                filterCriteria.category,
-                                filterCriteria.priority,
-                                filterCriteria.query,
-                                filterCriteria.isCompleted,
-                            )
-                        )
+                        tasks.addAll(getTaskUiState.data.tasks)
                     }
 
                     UiState.Initialization -> {}
@@ -129,7 +117,7 @@ fun TasksListScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(16.dp)
             ) {
 
                 if (filterDialog) {
@@ -145,30 +133,9 @@ fun TasksListScreen(
                         onClearAllFilters = {
                             filterDialog = false
                             filterCriteria.resetFilters()
-
-                            tasks.clear()
-                            tasks.addAll(
-                                filterTasks(
-                                    originalTasksList,
-                                    filterCriteria.category,
-                                    filterCriteria.priority,
-                                    filterCriteria.query,
-                                    filterCriteria.isCompleted,
-                                )
-                            )
+                            dispatchIntent(TaskListIntent.FilterTasks(filterCriteria))
                         },
-                        onSearchClick = {
-                            tasks.clear()
-                            tasks.addAll(
-                                filterTasks(
-                                    originalTasksList,
-                                    filterCriteria.category,
-                                    filterCriteria.priority,
-                                    filterCriteria.query,
-                                    filterCriteria.isCompleted,
-                                )
-                            )
-                        })
+                        onSearchClick = { dispatchIntent(TaskListIntent.FilterTasks(filterCriteria)) })
                 }
 
                 FloatingActionButton(
@@ -316,28 +283,6 @@ private fun TaskCard(
     }
 }
 
-//endregion
-//region Filter Tasks
-fun filterTasks(
-    tasks: List<TaskView>,
-    selectedCategory: Category,
-    selectedPriority: Priority,
-    query: String,
-    isCompletedSelected: Boolean,
-): List<TaskView> {
-    return tasks.filter { task ->
-
-        val categoryMatch = selectedCategory == Category.ALL || task.category == selectedCategory
-        val priorityMatch = selectedPriority == Priority.ALL || task.priority == selectedPriority
-        val queryMatch = task.title.contains(query, ignoreCase = true)
-        val isCompletedMatch = if (isCompletedSelected) task.isCompleted else true
-
-        categoryMatch && priorityMatch && queryMatch && isCompletedMatch
-    }
-}
-
-//endregion
-//region Filter Screen
 @Composable
 fun FilterTasksScreen(
     filteringCriteria: FilterCriteria,
