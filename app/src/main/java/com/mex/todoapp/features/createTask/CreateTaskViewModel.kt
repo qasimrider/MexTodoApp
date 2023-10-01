@@ -49,9 +49,7 @@ class CreateTaskViewModel @Inject constructor(
 
     //endregion
     private fun createNotification(task: Task) {
-        val notificationTimeMillis =
-            System.currentTimeMillis() + 15 * 1000
-        notificationScheduler.scheduleNotification(task, notificationTimeMillis)
+        notificationScheduler.scheduleNotification(task)
     }
 }
 

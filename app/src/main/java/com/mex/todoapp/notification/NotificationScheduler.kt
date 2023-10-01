@@ -9,13 +9,14 @@ import com.mex.todoapp.notification.NotificationConstants.TASK_DESCRIPTION
 import com.mex.todoapp.notification.NotificationConstants.TASK_ID
 import com.mex.todoapp.notification.NotificationConstants.TASK_TITLE
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
 
 @Singleton
 class NotificationScheduler @Inject constructor(@ApplicationContext private val context: Context) {
-    fun scheduleNotification(task: Task, notificationTimeMillis: Long) {
+    fun scheduleNotification(task: Task) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         val intent = Intent(context, NotificationReceiver::class.java)
@@ -30,11 +31,25 @@ class NotificationScheduler @Inject constructor(@ApplicationContext private val 
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        alarmManager.set(
+        alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            notificationTimeMillis,
+            getNotificationTimeInMillis(),
+            AlarmManager.INTERVAL_DAY,
             pendingIntent
         )
+    }
+
+    private fun getNotificationTimeInMillis(): Long {
+        // Set the time to 12:00 PM
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 12)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+
+        if (calendar.timeInMillis <= System.currentTimeMillis()) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+        }
+        return calendar.timeInMillis
     }
 
     fun cancelScheduledNotification(notificationId: Int) {
