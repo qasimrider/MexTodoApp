@@ -398,7 +398,7 @@ fun FilterTasksScreen(
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done
             ),
-            placeholder = { Text(text = stringResource(R.string.search_tasks)) },
+            placeholder = { Text(text = stringResource(R.string.task_name)) },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -409,10 +409,7 @@ fun FilterTasksScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally)
-        ) {
-            Text("Clear All")
-
-        }
+        ) { Text(stringResource(R.string.clear_all)) }
     }
 }
 
@@ -447,7 +444,7 @@ fun FilterAlertDialog(
             Button(onClick = {
                 onSearchClick()
                 onCloseDialog()
-            }) { Text(text = stringResource(R.string.search)) }
+            }) { Text(text = stringResource(R.string.search_tasks)) }
         })
 
 }
