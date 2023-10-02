@@ -22,15 +22,15 @@ The Approach to write this software is pretty much in an isolated way. Below are
 
 ## Usage
 1. Launch the application.
-2. Create a new task by clicking the "Add FAB Icon" button on the right of the page.
-3. Set a task title, description, due date, priority, and category for the task.
-4. Click "Create Task" to add the task to your list.
-5. Click on the Check box to mark the task as completed.
-6. Long press the task from the list to delete it.
-7. Filter the task by clicking the "Search FAB Icon" button on the left of the page.
-8. You can select one in the category and priority option for filtering
-9. Tick the "Completed" check box to filter the completed tasks
-10. "Clear All" will remove all the filters from the list
+2. To create a new task, tap the "Add FAB Icon" button located on the right side of the page.
+3. Fill in the task details, including the task title, description, due date, priority, and category.
+4. Once you've entered the task information, tap "Create Task" to add it to your task list.
+5. To mark a task as completed, simply tap the checkbox on the task.
+6. If you wish to delete a task, long-press the task from the list and confirm the deletion.
+7. For task filtering, tap the "Search FAB Icon" button on the left side of the page.
+8. You can filter tasks by selecting specific categories and priorities using the provided options.
+9. To filter completed tasks, check the "Completed" checkbox.
+10. To clear all applied filters and view the complete task list, tap "Clear All."
 
 ## Core Libs
 1. Compose UI
