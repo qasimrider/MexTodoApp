@@ -20,7 +20,17 @@ The Approach to write this software is pretty much in an isolated way. Below are
 <img width="416" alt="Screenshot 2023-10-02 at 11 31 55 AM" src="https://github.com/qasimrider/MexTodoApp/assets/15344125/48493137-6ce8-4e5f-9119-444d72549505">
 <img width="419" alt="Screenshot 2023-10-02 at 11 31 41 AM" src="https://github.com/qasimrider/MexTodoApp/assets/15344125/d51d4c21-592b-43cb-9f1d-5c346b4951a7">
 
-
+## Usage
+1. Launch the application.
+2. Create a new task by clicking the "Add FAB Icon" button on the right of the page.
+3. Set a task title, description, due date, priority, and category for the task.
+4. Click "Create Task" to add the task to your list.
+5. Click on the Check box to mark the task as completed.
+6. Long press the task from the list to delete it.
+7. Filter the task by clicking the "Search FAB Icon" button on the left of the page.
+8. You can select one in the category and priority option for filtering
+9. Tick the "Completed" check box to filter the completed tasks
+10. "Clear All" will remove all the filters from the list
 
 ## Core Libs
 1. Compose UI
