@@ -16,15 +16,14 @@ import javax.inject.Inject
 class CreateTaskViewModel @Inject constructor(
     private val notificationScheduler: NotificationScheduler,
     private val mexTodoRepository: MexTodoRepository
-) :
-    BaseViewModel<CreateTaskIntent, CreateTaskAction, CreateChatUiState>() {
+) : BaseViewModel<CreateTaskIntent, CreateTaskAction, CreateChatUiState>() {
 
-    override fun reducer(intent: CreateTaskIntent): CreateTaskAction =
+    override fun intentToAction(intent: CreateTaskIntent): CreateTaskAction =
         when (intent) {
             is CreateTaskIntent.CreateTask -> CreateTaskAction.CreateTask(intent.task)
         }
 
-    override fun handleAction(action: CreateTaskAction) {
+    override fun reducer(action: CreateTaskAction) {
         when (action) {
             is CreateTaskAction.CreateTask -> createTask(action.task)
         }

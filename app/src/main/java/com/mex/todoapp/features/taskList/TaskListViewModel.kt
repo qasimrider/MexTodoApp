@@ -21,12 +21,11 @@ import javax.inject.Inject
 class TaskListViewModel @Inject constructor(
     private val mexTodoRepository: MexTodoRepository,
     private val notificationScheduler: NotificationScheduler,
-) :
-    BaseViewModel<TaskListIntent, TaskListAction, GetAllTasksUiState>() {
+) : BaseViewModel<TaskListIntent, TaskListAction, GetAllTasksUiState>() {
 
     private lateinit var getAllTasksUiState: GetAllTasksUiState
 
-    override fun reducer(intent: TaskListIntent): TaskListAction {
+    override fun intentToAction(intent: TaskListIntent): TaskListAction {
         return when (intent) {
             is TaskListIntent.GetAllTasks -> TaskListAction.GetAllTasks
             is TaskListIntent.UpdateTask -> TaskListAction.UpdateTask(intent.updatedTask)
@@ -35,7 +34,7 @@ class TaskListViewModel @Inject constructor(
         }
     }
 
-    override fun handleAction(action: TaskListAction) {
+    override fun reducer(action: TaskListAction) {
         when (action) {
             is TaskListAction.GetAllTasks -> getTasks()
             is TaskListAction.UpdateTask -> updateTask(action.updatedTask)

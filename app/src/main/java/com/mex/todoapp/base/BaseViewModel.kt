@@ -20,11 +20,11 @@ abstract class BaseViewModel<INTENT : ViewIntent, ACTION : ViewAction, STATE : V
 
     //region State Management
     final override fun dispatchIntent(intent: INTENT) {
-        handleAction(reducer(intent))
+        reducer(intentToAction(intent))
     }
 
-    protected abstract fun reducer(intent: INTENT): ACTION
+    protected abstract fun intentToAction(intent: INTENT): ACTION
 
-    protected abstract fun handleAction(action: ACTION)
+    protected abstract fun reducer(action: ACTION)
     //endregion
 }
